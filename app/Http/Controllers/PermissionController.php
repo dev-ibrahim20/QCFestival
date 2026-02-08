@@ -1,0 +1,56 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Spatie\Permission\Models\Permission;
+use Illuminate\Http\Request;
+
+class PermissionController extends Controller
+{
+    public function index()
+    {
+        $permissions = Permission::paginate(15);
+        return view('permissions.index', compact('permissions'));
+    }
+
+    public function create()
+    {
+        return view('permissions.create');
+    }
+
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|unique:permissions|max:255',
+        ]);
+
+        Permission::create(['name' => $validated['name']]);
+
+        return redirect()->route('permissions.index')
+            ->with('success', 'تم إضافة الصلاحية بنجاح!');
+    }
+
+    public function edit(Permission $permission)
+    {
+        return view('permissions.edit', compact('permission'));
+    }
+
+    public function update(Request $request, Permission $permission)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|unique:permissions,name,' . $permission->id . '|max:255',
+        ]);
+
+        $permission->update(['name' => $validated['name']]);
+
+        return redirect()->route('permissions.index')
+            ->with('success', 'تم تحديث الصلاحية بنجاح!');
+    }
+
+    public function destroy(Permission $permission)
+    {
+        $permission->delete();
+        return redirect()->route('permissions.index')
+            ->with('success', 'تم حذف الصلاحية بنجاح!');
+    }
+}
